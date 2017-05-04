@@ -113,9 +113,21 @@ SparqlSearchResultList.prototype.fetchPage = function (offset) {
 }
 
 SparqlSearchResultList.prototype.resultSubjects = function (page) {
-  return page.match(null, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', this.options.resultType).map(function (triple) {
+  var subjects = page.match(null, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', this.options.resultType).map(function (triple) {
     return triple.subject
   })
+
+  // sort subjects if they have a score property
+  if (page.match(null, 'http://voc.zazuko.com/zack#score').length > 0) {
+    subjects = subjects.sort(function (a, b) {
+      var scoreA = parseFloat(page.match(a, 'http://voc.zazuko.com/zack#score').toArray().shift().object.toString())
+      var scoreB = parseFloat(page.match(b, 'http://voc.zazuko.com/zack#score').toArray().shift().object.toString())
+
+      return scoreB - scoreA
+    })
+  }
+
+  return subjects
 }
 
 SparqlSearchResultList.prototype.loadRows = function (offset) {
