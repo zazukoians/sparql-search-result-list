@@ -1,6 +1,6 @@
 {
   "name": "sparql-search-result-list",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "HTML search result list for SPARQL queries with paging support",
   "main": "index.js",
   "scripts": {
