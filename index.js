@@ -114,16 +114,12 @@ SparqlSearchResultList.prototype.fetchPage = function (offset) {
 
 SparqlSearchResultList.prototype.resultSubjects = function (page) {
   var subjects = this.options.resultTypes.map(function (resultType) {
-    console.log('ResultType', resultType)
     return page.match(null, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', resultType).map(function (triple) {
-      console.log('Subject', triple.subject)
       return triple.subject
     })
   }).reduce(function (pre, cur) {
     return pre.concat(cur)
   })
-
-  console.log('Subjects', subjects)
 
   // sort subjects if they have a score property
   if (page.match(null, 'http://voc.zazuko.com/zack#score').length > 0) {
