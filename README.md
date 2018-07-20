@@ -15,7 +15,7 @@ The constructor has only an options argument with the
 - `endpointUrl`: URL of the SPARQL endpoint (required)
 - `pageSize`: Number of rows a page contains (required)
 - `preload`: Number of rows which will be loaded ahead before and after the current view (default: 50)
-- `resultType`: The rdf:type of the results (required)
+- `resultTypes`: An Array containing the rdf:type of the results (required)
 - `metadataQueryTemplate`: SPARQL template for search metadata  (required)
 - `resultQueryTemplate`: SPARQL template for search results (required)
 
