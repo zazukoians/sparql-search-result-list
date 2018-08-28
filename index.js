@@ -20,6 +20,14 @@ function SparqlSearchResultList (options) {
     updateUrl: options.endpointUrl
   })
 
+  this.resultTypes = options.resultTypes.map(function (resultType) {
+    if (typeof resultType === 'string') {
+      return rdf.namedNode(resultType)
+    } else {
+      return resultType
+    }
+  })
+
   this.rows = []
 
   this.start = ''
@@ -124,7 +132,7 @@ SparqlSearchResultList.prototype.fetchPage = function (offset) {
 }
 
 SparqlSearchResultList.prototype.resultSubjects = function (page) {
-  var subjects = this.options.resultTypes.map(function (resultType) {
+  var subjects = this.resultTypes.map(function (resultType) {
     return page.match(null, terms.type, resultType).toArray().map(function (triple) {
       return triple.subject
     })
