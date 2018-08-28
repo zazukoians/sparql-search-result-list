@@ -23,8 +23,9 @@
   },
   "homepage": "https://github.com/zazukoians/sparql-search-result-list",
   "dependencies": {
+    "@rdfjs/data-model": "^1.1.0",
     "clusterize.js-paging": "^1.0.0",
-    "rdf-fetch": "^0.3.3",
+    "rdf-fetch": "^1.0.0",
     "sparql-http-client": "^1.0.1"
   },
   "devDependencies": {

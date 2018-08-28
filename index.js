@@ -1,6 +1,15 @@
+var rdf = require('@rdfjs/data-model')
 var rdfFetch = require('rdf-fetch')
 var SparqlClient = require('sparql-http-client')
 var ClusterizePaging = require('clusterize.js-paging')
+
+var terms = {
+  numberOfResults: rdf.namedNode('http://voc.zazuko.com/zack#numberOfResults'),
+  queryStart: rdf.namedNode('http://voc.zazuko.com/zack#queryStart'),
+  queryEnd: rdf.namedNode('http://voc.zazuko.com/zack#queryEnd'),
+  type: rdf.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+  score: rdf.namedNode('http://voc.zazuko.com/zack#score')
+}
 
 function SparqlSearchResultList (options) {
   this.options = options || {}
@@ -72,24 +81,26 @@ SparqlSearchResultList.prototype.fetchResultLength = function () {
   var query = this.buildMetadataQuery()
 
   return this.client.postQuery(query).then(function (res) {
-    var count = res.graph.match(null, 'http://voc.zazuko.com/zack#numberOfResults').toArray().shift()
+    return res.dataset()
+  }).then(function (graph) {
+    var count = graph.match(null, terms.numberOfResults).toArray().shift()
 
-    var querystart = res.graph.match(null, 'http://voc.zazuko.com/zack#queryStart').toArray().shift()
-    var queryend = res.graph.match(null, 'http://voc.zazuko.com/zack#queryEnd').toArray().shift()
+    var querystart = graph.match(null, terms.queryStart).toArray().shift()
+    var queryend = graph.match(null, terms.queryEnd).toArray().shift()
 
     if (!querystart && !queryend) {
       self.start = ''
       self.end = ''
     } else {
-      self.start = new Date(querystart.object.nominalValue)
-      self.end = new Date(queryend.object.nominalValue)
+      self.start = new Date(querystart.object.value)
+      self.end = new Date(queryend.object.value)
     }
 
     if (!count) {
       return 0
     }
 
-    return parseInt(count.object.nominalValue)
+    return parseInt(count.object.value)
   })
 }
 
@@ -108,13 +119,13 @@ SparqlSearchResultList.prototype.fetchPage = function (offset) {
   var query = this.buildResultQuery(offset)
 
   return this.client.postQuery(query).then(function (res) {
-    return res.graph
+    return res.dataset()
   })
 }
 
 SparqlSearchResultList.prototype.resultSubjects = function (page) {
   var subjects = this.options.resultTypes.map(function (resultType) {
-    return page.match(null, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', resultType).map(function (triple) {
+    return page.match(null, terms.type, resultType).toArray().map(function (triple) {
       return triple.subject
     })
   }).reduce(function (pre, cur) {
@@ -122,10 +133,10 @@ SparqlSearchResultList.prototype.resultSubjects = function (page) {
   })
 
   // sort subjects if they have a score property
-  if (page.match(null, 'http://voc.zazuko.com/zack#score').length > 0) {
+  if (page.match(null, terms.score).length > 0) {
     subjects = subjects.sort(function (a, b) {
-      var scoreA = parseFloat(page.match(a, 'http://voc.zazuko.com/zack#score').toArray().shift().object.toString())
-      var scoreB = parseFloat(page.match(b, 'http://voc.zazuko.com/zack#score').toArray().shift().object.toString())
+      var scoreA = parseFloat(page.match(a, terms.score).toArray().shift().object.value)
+      var scoreB = parseFloat(page.match(b, terms.score).toArray().shift().object.value)
 
       return scoreB - scoreA
     })
