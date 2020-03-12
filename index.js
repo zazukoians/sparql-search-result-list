@@ -1,5 +1,4 @@
-var rdf = require('@rdfjs/data-model')
-var rdfFetch = require('rdf-fetch')
+var rdf = require('rdf-ext')
 var SparqlClient = require('sparql-http-client')
 var ClusterizePaging = require('clusterize.js-paging')
 
@@ -15,9 +14,7 @@ function SparqlSearchResultList (options) {
   this.options = options || {}
 
   this.client = new SparqlClient({
-    fetch: rdfFetch,
-    endpointUrl: options.endpointUrl,
-    updateUrl: options.endpointUrl
+    endpointUrl: options.endpointUrl
   })
 
   this.resultTypes = options.resultTypes.map(function (resultType) {
@@ -88,8 +85,8 @@ SparqlSearchResultList.prototype.fetchResultLength = function () {
   var self = this
   var query = this.buildMetadataQuery()
 
-  return this.client.postQuery(query).then(function (res) {
-    return res.dataset()
+  return this.client.query.construct(query, { operation: 'postUrlencoded' }).then(function (stream) {
+    return rdf.dataset().import(stream)
   }).then(function (graph) {
     var count = graph.match(null, terms.numberOfResults).toArray().shift()
 
@@ -126,8 +123,8 @@ SparqlSearchResultList.prototype.buildResultQuery = function (offset) {
 SparqlSearchResultList.prototype.fetchPage = function (offset) {
   var query = this.buildResultQuery(offset)
 
-  return this.client.postQuery(query).then(function (res) {
-    return res.dataset()
+  return this.client.query.construct(query, { operation: 'postUrlencoded' }).then(function (stream) {
+    return rdf.dataset().import(stream)
   })
 }
 
